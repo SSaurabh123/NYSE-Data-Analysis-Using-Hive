@@ -1,0 +1,35 @@
+#Query for finding volume of company
+
+
+ select cl.sector, cl.company_name, substr(s.transactiondate, 4) transactionmonth, sum(s.volume) monthlyvolume from companylist cl 
+join stock_eod s
+on s.stockticker = cl.symbol
+where s.transactiondate like '%2013'
+group by cl.sector, cl.company_name, substr(s.transactiondate, 4)
+order by sector, company_name, transactionmonth;
+
+
+
+
+#Query for external table stock_data
+
+ Create stock_eod as external table using hive command/query
+create external table stock_eod (stockticker string, transactiondate string, openprice float, highprice float, lowprice float, closeprice float, volume bigint )ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' LOCATION '/user/admin/nyse_demo/stock_eod';
+
+
+#Query for storing the processed data in table
+
+
+create table stock_volume_per_month
+row format delimited fields terminated by '|'
+as
+select cl.sector, cl.company_name, substr(s.transactiondate, 4) transactionmonth, 
+sum(s.volume) monthlyvolume from companylist cl 
+join stock_eod s
+on s.stockticker = cl.symbol
+where s.transactiondate like '%2013'
+group by cl.sector, cl.company_name, substr(s.transactiondate, 4)
+order by sector, company_name, transactionmonth;
+
+
+
